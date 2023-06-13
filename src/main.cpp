@@ -25,8 +25,8 @@ D7 = S3 //Izq
 #define S3 D7 // izquierda
 
 // put function declarations here:
-const int pwmFrequency = 20000; // PWM frequency in Hz
-const int pwmResolution = 10;   // PWM resolution (8 bits)
+const int pwmFrequency = 40000; // PWM frequency in Hz
+
 void setup()
 {
   // Start pin sleep as 1
@@ -42,7 +42,7 @@ void setup()
   pinMode(S1, INPUT);
   pinMode(S2, INPUT);
   pinMode(S3, INPUT);
-  analogWriteRange(1023);
+  analogWriteRange(255);
   analogWriteFreq(pwmFrequency);
 
   Serial.begin(9600);
@@ -79,80 +79,100 @@ void girarDerecha()
   analogWrite(IN1, actualSpeedMotorA);
   analogWrite(IN4, actualSpeedMotorB);
 }
+void stop()
+{
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+  digitalWrite(IN4, LOW); //
+  digitalWrite(IN3, LOW);
+}
 
 void seguirLinea()
 {
+  int sensorDerecho = digitalRead(S1);
   int sensorIzquierdo = digitalRead(S3);
   int sensorCentral = digitalRead(S2);
-  int sensorDerecho = digitalRead(S1);
+  Serial.print("Sensor derecho: ");
+  Serial.print(sensorDerecho);
+  Serial.print(" Sensor central: ");
+  Serial.print(sensorCentral);
+  Serial.print(" Sensor izquierdo: ");
+  Serial.println(sensorIzquierdo);
 
-  if (sensorIzquierdo == LOW && sensorCentral == LOW && sensorDerecho == LOW)
+  // Estado de los motores
+  Serial.print("Motor A: ");
+  Serial.print(actualSpeedMotorA);
+  Serial.print(" Motor B: ");
+  Serial.println(actualSpeedMotorB);
+
+  if (sensorIzquierdo == HIGH && sensorCentral == HIGH && sensorDerecho == HIGH)
   {
-    // Caso 1: Todos los sensores están en LOW
-    actualSpeedMotorA = 1023;
-    actualSpeedMotorB = 1023;
+    // Caso 1: Todos los sensores están en HIGH
+    actualSpeedMotorA = 0;
+    actualSpeedMotorB = 0;
     moverAdelante();
   }
-  else if (sensorIzquierdo == LOW && sensorCentral == LOW && sensorDerecho == HIGH)
+  else if (sensorIzquierdo == HIGH && sensorCentral == HIGH && sensorDerecho == LOW)
   {
-    // Caso 2: Sensor derecho está en HIGH, los demás en LOW
-    actualSpeedMotorA = 800; // Ajusta la velocidad de los motores según sea necesario
-    actualSpeedMotorB = 1023;
-    girarIzquierda();
-  }
-  else if (sensorIzquierdo == LOW && sensorCentral == HIGH && sensorDerecho == LOW)
-  {
-    // Caso 3: Sensor central está en HIGH, los demás en LOW
-    actualSpeedMotorA = 1023;
-    actualSpeedMotorB = 1023;
-    moverAdelante();
-  }
-  else if (sensorIzquierdo == LOW && sensorCentral == HIGH && sensorDerecho == HIGH)
-  {
-    // Caso 4: Sensor central y derecho están en HIGH, izquierdo en LOW
-    actualSpeedMotorA = 1023;
-    actualSpeedMotorB = 800; // Ajusta la velocidad de los motores según sea necesario
-    girarDerecha();
-  }
-  else if (sensorIzquierdo == HIGH && sensorCentral == LOW && sensorDerecho == LOW)
-  {
-    // Caso 5: Sensor izquierdo está en HIGH, los demás en LOW
-    actualSpeedMotorA = 800; // Ajusta la velocidad de los motores según sea necesario
+    // Caso 2: Sensor derecho está en LOW, los demás en HIGH
+    actualSpeedMotorA = 0; // Ajusta la velocidad de los motores según sea necesario
     actualSpeedMotorB = 1023;
     girarIzquierda();
   }
   else if (sensorIzquierdo == HIGH && sensorCentral == LOW && sensorDerecho == HIGH)
   {
-    // Caso 6: Sensor izquierdo y derecho están en HIGH, central en LOW
-    actualSpeedMotorA = 1023;
-    actualSpeedMotorB = 800; // Ajusta la velocidad de los motores según sea necesario
-    girarDerecha();
-  }
-  else if (sensorIzquierdo == HIGH && sensorCentral == HIGH && sensorDerecho == LOW)
-  {
-    // Caso 7: Sensor izquierdo y central están en HIGH, derecho en LOW
+    // Caso 3: Sensor central está en LOW, los demás en HIGH
     actualSpeedMotorA = 1023;
     actualSpeedMotorB = 1023;
     moverAdelante();
   }
-  else if (sensorIzquierdo == HIGH && sensorCentral == HIGH && sensorDerecho == HIGH)
+  else if (sensorIzquierdo == HIGH && sensorCentral == LOW && sensorDerecho == LOW)
   {
-    // Caso 8: Todos los sensores están en HIGH
+    // Caso 4: Sensor central y derecho están en LOW, izquierdo en HIGH
+    actualSpeedMotorA = 1023;
+    actualSpeedMotorB = 0; // Ajusta la velocidad de los motores según sea necesario
+    girarDerecha();
+  }
+  else if (sensorIzquierdo == LOW && sensorCentral == HIGH && sensorDerecho == HIGH)
+  {
+    // Caso 5: Sensor izquierdo está en LOW, los demás en HIGH
+    actualSpeedMotorA = 0; // Ajusta la velocidad de los motores según sea necesario
+    actualSpeedMotorB = 1023;
+    girarIzquierda();
+  }
+  else if (sensorIzquierdo == LOW && sensorCentral == HIGH && sensorDerecho == LOW)
+  {
+    // Caso 6: Sensor izquierdo y derecho están en LOW, central en HIGH
+    actualSpeedMotorA = 1023;
+    actualSpeedMotorB = 0; // Ajusta la velocidad de los motores según sea necesario
+    girarDerecha();
+  }
+  else if (sensorIzquierdo == LOW && sensorCentral == LOW && sensorDerecho == HIGH)
+  {
+    // Caso 7: Sensor izquierdo y central están en LOW, derecho en HIGH
+    actualSpeedMotorA = 1023;
+    actualSpeedMotorB = 1023;
+    moverAdelante();
+  }
+  else if (sensorIzquierdo == LOW && sensorCentral == LOW && sensorDerecho == LOW)
+  {
+    // Caso 8: Todos los sensores están en LOW
     actualSpeedMotorA = 0; // Detener motores
     actualSpeedMotorB = 0;
+    stop();
     // Realizar alguna acción cuando se encuentra una intersección o límite
   }
   else
   {
-    // Caso 9: Todos los sensores están en HIGH
+    // Caso 9: Otro caso
     actualSpeedMotorA = 0; // Detener motores
     actualSpeedMotorB = 0;
-    // Realizar alguna acción cuando se encuentra una intersección o límite
   }
 }
 void loop()
 {
   seguirLinea();
+  delay(50);
 }
 
 // put function definitions here:
